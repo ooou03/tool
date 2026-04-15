@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- 加入這兩行可以讓 iOS 將其視為全螢幕的獨立 App -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>專業鳥類調查紀錄器 (離線專用版)</title>
+    <title>淡水河流域鳥類調查紀錄器</title>
     <style>
         :root {
-            --primary: #1a73e8;
-            --success: #34a853;
+            --primary: #1a73e8; 
+            --success: #34a853; 
             --danger: #ea4335;
             --warning: #f9ab00;
             --dark: #3c4043;
-            --bg: #f0f2f5;
+            --bg-outbound: #e8f0fe; 
+            --bg-return: #e6f4ea;   
         }
 
         body { 
@@ -22,34 +22,47 @@
             max-width: 600px; 
             margin: 0 auto; 
             padding: 15px; 
-            background-color: var(--bg); 
-            user-select: none; /* 防止誤觸反白文字 */
+            user-select: none;
             -webkit-tap-highlight-color: transparent;
+            transition: background-color 0.3s ease; 
         }
+
+        body.phase-outbound { background-color: var(--bg-outbound); }
+        body.phase-return { background-color: var(--bg-return); }
         
-        h2 { color: var(--primary); text-align: center; margin: 10px 0 20px 0; }
-        .offline-badge { display: block; text-align: center; background: #ea4335; color: white; padding: 4px; border-radius: 4px; font-size: 12px; font-weight: bold; width: fit-content; margin: -10px auto 15px auto; }
+        /* 標題設計 */
+        .main-title { color: #202124; text-align: center; margin: 10px 0 5px 0; font-size: 22px; font-weight: 800; }
+        .sub-title { color: #5f6368; text-align: center; margin: 0 0 20px 0; font-size: 16px; font-weight: bold; }
+        
+        /* 調查基本資料面板 */
+        .meta-toggle { background: #fff; padding: 12px; border-radius: 12px; text-align: center; font-weight: bold; color: var(--primary); cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 15px; border: 2px dashed var(--primary); transition: 0.2s; }
+        .meta-toggle:active { background: #f0f2f5; }
+        .meta-panel { background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: none; }
+        .meta-row { margin-bottom: 15px; }
+        .meta-row:last-child { margin-bottom: 0; }
+        .meta-row label { display: block; font-size: 15px; color: #3c4043; margin-bottom: 6px; font-weight: bold; }
+        .meta-input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box; background: #fafafa; outline: none; transition: 0.2s; }
+        .meta-input:focus { border-color: var(--primary); background: #fff; }
+        .meta-time-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         
         /* 頁籤切換 */
         .tabs { display: flex; margin-bottom: 15px; border-radius: 12px; overflow: hidden; background: #fff; padding: 5px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .tab-btn { flex: 1; padding: 12px; border: none; background: none; font-size: 18px; color: #5f6368; border-radius: 8px; cursor: pointer; transition: background 0.2s; }
-        .tab-btn.active { background-color: var(--primary); color: white; font-weight: bold; }
+        .tab-btn { flex: 1; padding: 12px; border: none; background: none; font-size: 18px; color: #5f6368; border-radius: 8px; cursor: pointer; transition: background 0.2s, color 0.2s; }
+        .tab-btn.active-outbound { background-color: var(--primary); color: white; font-weight: bold; }
+        .tab-btn.active-return { background-color: var(--success); color: white; font-weight: bold; }
         
-        /* 輸入區 */
         .input-group { display: flex; gap: 8px; margin-bottom: 20px; }
         input[type="text"] { flex: 1; padding: 14px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; outline: none; transition: border-color 0.2s; }
-        input:focus { border-color: var(--primary); }
-        .add-btn { padding: 0 20px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; }
+        input[type="text"]:focus { border-color: var(--primary); }
+        .add-btn { padding: 0 20px; background: var(--dark); color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; }
         .add-btn:active { opacity: 0.8; }
 
-        /* 快速選單 */
         .quick-select { margin-bottom: 20px; }
         .quick-label { font-size: 14px; color: #5f6368; margin-bottom: 10px; display: block; font-weight: bold; }
         .quick-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
-        .quick-btn { padding: 10px 14px; background: #e8f0fe; color: var(--primary); border: 1px solid #d2e3fc; border-radius: 20px; font-size: 15px; cursor: pointer; transition: 0.2s; white-space: nowrap; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .quick-btn:active { background: #d2e3fc; transform: scale(0.95); box-shadow: none; }
+        .quick-btn { padding: 10px 14px; background: #fff; color: #202124; border: 1px solid #ccc; border-radius: 20px; font-size: 15px; cursor: pointer; transition: 0.2s; white-space: nowrap; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .quick-btn:active { background: #e0e0e0; transform: scale(0.95); box-shadow: none; }
 
-        /* 列表區 */
         .bird-list { display: flex; flex-direction: column; gap: 10px; padding-bottom: 20px; }
         .bird-item { display: flex; justify-content: space-between; align-items: center; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .bird-info { flex: 1; }
@@ -59,9 +72,10 @@
         .btn-minus { background: var(--danger); }
         .btn-plus { background: var(--success); }
         .btn-circle:active { transform: scale(0.95); }
-        .count-display { font-size: 24px; font-weight: bold; min-width: 40px; text-align: center; color: #202124; }
+        
+        .count-display { font-size: 24px; font-weight: bold; min-width: 50px; text-align: center; color: #202124; cursor: pointer; background: #fff; padding: 5px 10px; border-radius: 8px; border: 2px dashed #ccc; transition: 0.2s; }
+        .count-display:active { background: #f0f2f5; }
 
-        /* 功能按鈕 */
         .footer-btns { margin-top: 10px; display: flex; flex-direction: column; gap: 12px; padding-bottom: 30px; }
         .btn-action { width: 100%; padding: 16px; border-radius: 12px; border: none; font-size: 18px; font-weight: bold; color: white; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
         .btn-action:active { transform: translateY(1px); box-shadow: none; }
@@ -71,16 +85,13 @@
         .btn-copy { background: var(--primary); }
         .btn-back { background: var(--dark); }
 
-        /* 表格與設定 */
         #summary-section, #settings-section { display: none; }
-        .table-wrapper { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .table-wrapper { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; padding: 15px; }
         table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 14px 10px; text-align: center; border-bottom: 1px solid #f0f2f5; font-size: 16px; }
+        th, td { padding: 10px; text-align: center; border: 1px solid #ddd; font-size: 15px; }
         th { background: #f8f9fa; color: #5f6368; font-weight: 600; }
-        tr:last-child td { border-bottom: none; }
         .total-col { font-weight: bold; color: var(--primary); }
 
-        /* 自訂對話框 (Modal) */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000; }
         .modal-content { background: white; padding: 25px; border-radius: 16px; width: 85%; max-width: 350px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
         .modal-text { font-size: 18px; color: #202124; margin-bottom: 25px; line-height: 1.5; }
@@ -91,27 +102,74 @@
         .modal-btn-danger { background: var(--danger); }
     </style>
 </head>
-<body>
+<body class="phase-outbound">
 
-<!-- 紀錄介面 -->
 <div id="record-section">
-    <h2>📋 鳥類調查紀錄器</h2>
-    <span class="offline-badge">📵 離線保護模式啟用中</span>
+    <h2 class="main-title">淡水河流域沿岸濕地鳥類同步調查記錄表</h2>
+    <p class="sub-title">樣線名稱： 竹圍</p>
+
+    <!-- 摺疊表單區塊 -->
+    <div class="meta-toggle" id="meta-toggle-btn" onclick="toggleMeta()">📋 填寫/修改調查基本資料 (點此展開)</div>
+    
+    <div class="meta-panel" id="meta-panel">
+        <div class="meta-row">
+            <label>調查日期：</label>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <input type="date" id="meta-date" class="meta-input" onchange="saveMeta()">
+                <span id="meta-weekday" style="font-weight: bold; color: var(--primary); white-space: nowrap; font-size: 16px;"></span>
+            </div>
+        </div>
+        <div class="meta-row">
+            <label>天氣：</label>
+            <select id="meta-weather" class="meta-input" onchange="saveMeta()">
+                <option value="">請選擇天氣...</option>
+                <option value="A 晴 (沒有或零星幾朵雲量)">A 晴 (沒有或零星幾朵雲量)</option>
+                <option value="B 部分有雲">B 部分有雲</option>
+                <option value="C 陰/雲層滿佈">C 陰/雲層滿佈</option>
+                <option value="D 小雨">D 小雨</option>
+                <option value="F 陣雨/大雨">F 陣雨/大雨</option>
+            </select>
+        </div>
+        <div class="meta-row meta-time-grid">
+            <div>
+                <label>去程起始時間：</label>
+                <input type="time" id="meta-out-start" class="meta-input" onchange="saveMeta()">
+            </div>
+            <div>
+                <label>去程結束時間：</label>
+                <input type="time" id="meta-out-end" class="meta-input" onchange="saveMeta()">
+            </div>
+        </div>
+        <div class="meta-row meta-time-grid">
+            <div>
+                <label>回程起始時間：</label>
+                <input type="time" id="meta-ret-start" class="meta-input" onchange="saveMeta()">
+            </div>
+            <div>
+                <label>回程結束時間：</label>
+                <input type="time" id="meta-ret-end" class="meta-input" onchange="saveMeta()">
+            </div>
+        </div>
+        <button onclick="toggleMeta()" style="width: 100%; padding: 12px; border-radius: 8px; border: none; background: #e0e0e0; font-size: 16px; font-weight: bold; margin-top: 5px; cursor: pointer;">⬆️ 收起基本資料</button>
+    </div>
     
     <div class="tabs">
-        <button class="tab-btn active" id="btn-out" onclick="setPhase('outbound')">🚶 去程</button>
+        <button class="tab-btn active-outbound" id="btn-out" onclick="setPhase('outbound')">🚶 去程</button>
         <button class="tab-btn" id="btn-ret" onclick="setPhase('return')">🚶 回程</button>
     </div>
 
     <div class="input-group">
-        <input type="text" id="bird-input" placeholder="輸入鳥名 (如: 翠鳥)" onkeypress="if(event.key==='Enter')addBird()">
+        <input type="text" id="bird-input" placeholder="看見名單外的鳥？ (如: 翠鳥)" onkeypress="if(event.key==='Enter')addBird()">
         <button class="add-btn" onclick="addBird()">新增</button>
     </div>
 
     <div class="quick-select">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <span class="quick-label" style="margin-bottom: 0;">⚡ 快速加入名單：</span>
-            <button onclick="showSettings()" style="background:none; border:none; color:var(--primary); font-size:15px; font-weight:bold; cursor:pointer; padding:5px;">⚙️ 編輯/匯入</button>
+            <span class="quick-label" style="margin-bottom: 0;">⚡ 快速預選名單：</span>
+            <div>
+                <button onclick="preSelectAll()" style="background:none; border:none; color:var(--dark); font-size:15px; font-weight:bold; cursor:pointer; padding:5px 10px;">📥 全選加入</button>
+                <button onclick="showSettings()" style="background:none; border:none; color:var(--dark); font-size:15px; font-weight:bold; cursor:pointer; padding:5px;">⚙️ 編輯</button>
+            </div>
         </div>
         <div class="quick-buttons" id="quick-buttons-container">
             <!-- 快速按鈕會動態顯示在這裡 -->
@@ -128,19 +186,44 @@
     </div>
 </div>
 
-<!-- 統計介面 -->
 <div id="summary-section">
     <h2>📊 調查統計結果</h2>
-    <div class="table-wrapper">
+    
+    <!-- 匯出容器：包含表頭與資料 -->
+    <div class="table-wrapper" id="export-container">
+        <!-- 這個區塊的排版專門為了複製到 Excel 而設計 -->
+        <div style="text-align: center; margin-bottom: 15px;">
+            <h3 style="margin: 0 0 5px 0; font-size: 18px;">淡水河流域沿岸濕地鳥類同步調查記錄表</h3>
+            <p style="margin: 0; font-size: 14px; color: #555;">樣線名稱： 竹圍</p>
+        </div>
+        
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; background: #fdfdfd;">
+            <tr>
+                <td style="border: 1px solid #aaa; padding: 8px; background: #f0f0f0; font-weight: bold; width: 25%;">調查日期</td>
+                <td style="border: 1px solid #aaa; padding: 8px; text-align: left;" colspan="3" id="export-date"></td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid #aaa; padding: 8px; background: #f0f0f0; font-weight: bold;">天氣</td>
+                <td style="border: 1px solid #aaa; padding: 8px; text-align: left;" colspan="3" id="export-weather"></td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid #aaa; padding: 8px; background: #f0f0f0; font-weight: bold;">去程時間</td>
+                <td style="border: 1px solid #aaa; padding: 8px; text-align: left; width: 25%;" id="export-out-time"></td>
+                <td style="border: 1px solid #aaa; padding: 8px; background: #f0f0f0; font-weight: bold; width: 25%;">回程時間</td>
+                <td style="border: 1px solid #aaa; padding: 8px; text-align: left; width: 25%;" id="export-ret-time"></td>
+            </tr>
+        </table>
+
+        <!-- 鳥類統計表格將會插入到這個 div 裡面 -->
         <div id="table-container"></div>
     </div>
+    
     <div class="footer-btns">
-        <button class="btn-action btn-copy" onclick="copyTable()">📋 複製統計資料 (貼到Excel)</button>
+        <button class="btn-action btn-copy" onclick="copyTable()">📋 複製所有資料 (貼到Excel)</button>
         <button class="btn-action btn-back" onclick="hideSummary()">⬅️ 返回繼續紀錄</button>
     </div>
 </div>
 
-<!-- 設定介面 -->
 <div id="settings-section">
     <h2>⚙️ 編輯/匯入鳥類名單</h2>
     <p style="color:#5f6368; font-size:15px; margin-bottom:15px; line-height:1.5;">請在下方貼上這次調查會遇到的鳥類。<br><strong>※ 直接貼上即可，每行輸入一隻，或用逗號、頓號隔開。</strong></p>
@@ -151,7 +234,6 @@
     </div>
 </div>
 
-<!-- 自訂對話框 -->
 <div id="custom-modal" class="modal-overlay">
     <div class="modal-content">
         <div id="modal-text" class="modal-text">提示訊息</div>
@@ -162,31 +244,45 @@
     </div>
 </div>
 
+<!-- 快速輸入數量對話框 -->
+<div id="prompt-modal" class="modal-overlay">
+    <div class="modal-content">
+        <div id="prompt-title" class="modal-text" style="margin-bottom: 15px; font-weight: bold;"></div>
+        <input type="number" id="prompt-input" inputmode="numeric" pattern="[0-9]*" placeholder="輸入數字..." style="width: 100%; padding: 15px; font-size: 24px; text-align: center; border: 2px solid var(--primary); border-radius: 8px; box-sizing: border-box; margin-bottom: 20px; outline: none;">
+        <div class="modal-buttons" style="flex-wrap: wrap; gap: 10px;">
+            <button class="modal-btn" style="background: var(--success); color: white; flex: 1 1 45%;" onclick="applyPrompt('add')">➕ 加上去</button>
+            <button class="modal-btn" style="background: var(--warning); color: white; flex: 1 1 45%;" onclick="applyPrompt('set')">＝ 設為此數</button>
+            <button class="modal-btn modal-btn-cancel" style="flex: 1 1 100%; margin-top: 5px;" onclick="closePrompt()">取消</button>
+        </div>
+    </div>
+</div>
+
 <script>
-    // --- 離線單機版邏輯 ---
     let currentPhase = 'outbound';
     let data = {
+        meta: { date: '', weather: '', outboundStart: '', outboundEnd: '', returnStart: '', returnEnd: '' },
         birdSpecies: [],
         records: { outbound: {}, return: {} }
     };
 
     const defaultCommonBirds = ['小白鷺', '白頭翁', '綠繡眼', '麻雀', '夜鷺', '珠頸斑鳩', '黑冠麻鷺', '大卷尾'];
     let commonBirds = [];
-    const STORAGE_KEY = 'offlineBirdSurveyData_v2'; // 使用獨立的 Key 確保不受舊版干擾
-    const LIST_STORAGE_KEY = 'customBirdList_v1'; // 儲存自訂鳥單的 Key
+    const STORAGE_KEY = 'offlineBirdSurveyData_v3'; // 更新 Key 避免與舊資料結構衝突
+    const LIST_STORAGE_KEY = 'customBirdList_v1'; 
+    let editingBird = null;
 
-    // 初始化：從本地端載入資料
     function init() {
         const savedData = localStorage.getItem(STORAGE_KEY);
         if (savedData) {
             try {
                 data = JSON.parse(savedData);
+                // 確保舊版資料升級時有 meta 物件
+                if(!data.meta) data.meta = { date: '', weather: '', outboundStart: '', outboundEnd: '', returnStart: '', returnEnd: '' };
             } catch (e) {
                 console.error("讀取資料失敗，重新初始化", e);
             }
         }
 
-        // 讀取自訂的鳥類名單
         const savedList = localStorage.getItem(LIST_STORAGE_KEY);
         if (savedList) {
             commonBirds = JSON.parse(savedList);
@@ -194,99 +290,162 @@
             commonBirds = [...defaultCommonBirds];
         }
 
-        // 確保剛打開時，上方的快速按鈕就依照「中文筆劃順序」排列
         commonBirds.sort((a, b) => a.localeCompare(b, 'zh-TW', { collation: 'stroke' }));
-        
-        // 確保下方的紀錄清單也依照「中文筆劃順序」排列
         data.birdSpecies.sort((a, b) => a.localeCompare(b, 'zh-TW', { collation: 'stroke' }));
 
-        renderQuickButtons();
-        renderBirdList();
+        // 填入 Meta 資料到 UI
+        document.getElementById('meta-date').value = data.meta.date || '';
+        document.getElementById('meta-weather').value = data.meta.weather || '';
+        document.getElementById('meta-out-start').value = data.meta.outboundStart || '';
+        document.getElementById('meta-out-end').value = data.meta.outboundEnd || '';
+        document.getElementById('meta-ret-start').value = data.meta.returnStart || '';
+        document.getElementById('meta-ret-end').value = data.meta.returnEnd || '';
+        updateWeekday();
+
+        // 若無日期資料，預設展開面板提醒填寫
+        if(!data.meta.date) {
+            document.getElementById('meta-panel').style.display = 'block';
+            document.getElementById('meta-toggle-btn').innerText = '📋 點擊收起基本資料';
+        }
+
+        setPhase(currentPhase);
     }
 
-    // 儲存資料到本地端 (每次更動都會強制呼叫)
     function saveData() {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     }
 
-    // 切換去程/回程
+    // --- Meta 資料控制 ---
+    function toggleMeta() {
+        const panel = document.getElementById('meta-panel');
+        const btn = document.getElementById('meta-toggle-btn');
+        if(panel.style.display === 'none' || panel.style.display === '') {
+            panel.style.display = 'block';
+            btn.innerText = '📋 點擊收起基本資料';
+        } else {
+            panel.style.display = 'none';
+            btn.innerText = '📋 填寫/修改調查基本資料 (點此展開)';
+        }
+    }
+
+    function saveMeta() {
+        data.meta.date = document.getElementById('meta-date').value;
+        data.meta.weather = document.getElementById('meta-weather').value;
+        data.meta.outboundStart = document.getElementById('meta-out-start').value;
+        data.meta.outboundEnd = document.getElementById('meta-out-end').value;
+        data.meta.returnStart = document.getElementById('meta-ret-start').value;
+        data.meta.returnEnd = document.getElementById('meta-ret-end').value;
+        updateWeekday();
+        saveData();
+    }
+
+    function updateWeekday() {
+        const dateVal = document.getElementById('meta-date').value;
+        const weekSpan = document.getElementById('meta-weekday');
+        if(dateVal) {
+            const days = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+            const d = new Date(dateVal);
+            weekSpan.innerText = days[d.getDay()];
+        } else {
+            weekSpan.innerText = '';
+        }
+    }
+
+    // --- 相位與鳥類紀錄控制 ---
     function setPhase(phase) {
         currentPhase = phase;
-        document.getElementById('btn-out').classList.toggle('active', phase === 'outbound');
-        document.getElementById('btn-ret').classList.toggle('active', phase === 'return');
+        document.body.className = 'phase-' + phase;
+        const btnOut = document.getElementById('btn-out');
+        const btnRet = document.getElementById('btn-ret');
+        
+        btnOut.className = 'tab-btn'; 
+        btnRet.className = 'tab-btn';
+        if (phase === 'outbound') btnOut.classList.add('active-outbound'); 
+        else btnRet.classList.add('active-return');   
+        
         renderBirdList();
     }
 
-    // 渲染快速按鈕
     function renderQuickButtons() {
         const container = document.getElementById('quick-buttons-container');
         container.innerHTML = '';
-        commonBirds.forEach(bird => {
+        const availableBirds = commonBirds.filter(bird => !data.birdSpecies.includes(bird));
+
+        if (availableBirds.length === 0) {
+            container.innerHTML = '<span style="color:#9aa0a6; font-size:14px; padding: 5px 0;">(名單內鳥類已全數加入下方調查表中)</span>';
+            return;
+        }
+        availableBirds.forEach(bird => {
             const btn = document.createElement('button');
             btn.className = 'quick-btn';
             btn.innerText = '+ ' + bird;
-            btn.onclick = () => addSpecificBird(bird);
+            btn.onclick = () => addSpecificBird(bird, false); 
             container.appendChild(btn);
         });
     }
 
-    // 新增特定鳥類
-    function addSpecificBird(name) {
+    function preSelectAll() {
+        let addedCount = 0;
+        commonBirds.forEach(bird => {
+            if (!data.birdSpecies.includes(bird)) {
+                data.birdSpecies.push(bird);
+                data.records.outbound[bird] = 0;
+                data.records.return[bird] = 0;
+                addedCount++;
+            }
+        });
+        if (addedCount > 0) {
+            data.birdSpecies.sort((a, b) => a.localeCompare(b, 'zh-TW', { collation: 'stroke' }));
+            saveData();
+            renderBirdList();
+            renderQuickButtons();
+        }
+    }
+
+    function addSpecificBird(name, autoIncrement = false) {
         if (!data.birdSpecies.includes(name)) {
             data.birdSpecies.push(name); 
-            // 加入新鳥種後，下方的紀錄清單立刻重新依照筆劃排序
             data.birdSpecies.sort((a, b) => a.localeCompare(b, 'zh-TW', { collation: 'stroke' }));
             data.records.outbound[name] = 0;
             data.records.return[name] = 0;
         }
-        data.records[currentPhase][name]++;
-        saveData(); // 立即儲存到設備
+        if (autoIncrement) data.records[currentPhase][name]++;
+        saveData(); 
         renderBirdList();
+        renderQuickButtons(); 
     }
 
-    // 手動輸入新增鳥類
     function addBird() {
         const input = document.getElementById('bird-input');
         const name = input.value.trim();
         if (!name) return;
-
-        addSpecificBird(name);
-        
+        addSpecificBird(name, true); 
         input.value = '';
         input.blur(); 
     }
 
-    // 變更數量
     function changeCount(bird, delta) {
         if (data.records[currentPhase][bird] + delta >= 0) {
             data.records[currentPhase][bird] += delta;
-            
-            // 如果這隻鳥的去程和回程數量都變成 0，就自動從清單中完全移除
             if (data.records.outbound[bird] === 0 && data.records.return[bird] === 0) {
                 const index = data.birdSpecies.indexOf(bird);
-                if (index > -1) {
-                    data.birdSpecies.splice(index, 1); // 從鳥類名單中刪除
-                }
-                // 清理多餘的紀錄物件空間
+                if (index > -1) data.birdSpecies.splice(index, 1); 
                 delete data.records.outbound[bird];
                 delete data.records.return[bird];
             }
-            
-            saveData(); // 立即儲存到設備
+            saveData(); 
             renderBirdList();
+            renderQuickButtons(); 
         }
     }
 
-    // 渲染清單
     function renderBirdList() {
         const container = document.getElementById('bird-list-container');
         container.innerHTML = '';
-        
         if (data.birdSpecies.length === 0) {
             container.innerHTML = '<div style="text-align:center; color:#9aa0a6; padding: 20px;">目前尚未新增任何紀錄，請點擊上方按鈕或手動輸入。</div>';
             return;
         }
-
         data.birdSpecies.forEach(bird => {
             const count = data.records[currentPhase][bird];
             const div = document.createElement('div');
@@ -295,7 +454,7 @@
                 <div class="bird-info"><span class="bird-name">${bird}</span></div>
                 <div class="controls">
                     <button class="btn-circle btn-minus" onclick="changeCount('${bird}', -1)">-</button>
-                    <div class="count-display">${count}</div>
+                    <div class="count-display" onclick="openEditCount('${bird}')">${count}</div>
                     <button class="btn-circle btn-plus" onclick="changeCount('${bird}', 1)">+</button>
                 </div>
             `;
@@ -303,13 +462,78 @@
         });
     }
 
+    function openEditCount(bird) {
+        editingBird = bird;
+        const currentCount = data.records[currentPhase][bird];
+        document.getElementById('prompt-title').innerText = `✏️ 編輯 ${bird} 的數量\n(目前: ${currentCount})`;
+        const inputElement = document.getElementById('prompt-input');
+        inputElement.value = ''; 
+        document.getElementById('prompt-modal').style.display = 'flex';
+        setTimeout(() => inputElement.focus(), 100);
+    }
+
+    function closePrompt() {
+        document.getElementById('prompt-modal').style.display = 'none';
+        editingBird = null;
+    }
+
+    function applyPrompt(action) {
+        if (!editingBird) return;
+        const inputVal = parseInt(document.getElementById('prompt-input').value, 10);
+        if (isNaN(inputVal) || inputVal < 0) {
+            closePrompt();
+            return;
+        }
+
+        let newCount = data.records[currentPhase][editingBird];
+        if (action === 'add') newCount += inputVal; 
+        else if (action === 'set') newCount = inputVal;  
+
+        data.records[currentPhase][editingBird] = newCount;
+
+        if (data.records.outbound[editingBird] === 0 && data.records.return[editingBird] === 0) {
+            const index = data.birdSpecies.indexOf(editingBird);
+            if (index > -1) data.birdSpecies.splice(index, 1); 
+            delete data.records.outbound[editingBird];
+            delete data.records.return[editingBird];
+        }
+
+        saveData(); 
+        renderBirdList();
+        renderQuickButtons(); 
+        closePrompt();
+    }
+
+    // --- 匯出功能 ---
     function showSummary() {
         document.getElementById('record-section').style.display = 'none';
         document.getElementById('summary-section').style.display = 'block';
+        document.body.style.backgroundColor = "#f0f2f5";
         window.scrollTo(0, 0);
         
-        let html = `<table id="result-table">
-            <thead><tr><th>鳥類名稱</th><th>去程</th><th>回程</th><th>總計</th></tr></thead><tbody>`;
+        // 填寫匯出表頭資料
+        const weekStr = document.getElementById('meta-weekday').innerText;
+        document.getElementById('export-date').innerText = data.meta.date ? `${data.meta.date} (${weekStr})` : '未填寫';
+        document.getElementById('export-weather').innerText = data.meta.weather || '未填寫';
+        
+        const outStart = data.meta.outboundStart || '--:--';
+        const outEnd = data.meta.outboundEnd || '--:--';
+        document.getElementById('export-out-time').innerText = `${outStart} ~ ${outEnd}`;
+        
+        const retStart = data.meta.returnStart || '--:--';
+        const retEnd = data.meta.returnEnd || '--:--';
+        document.getElementById('export-ret-time').innerText = `${retStart} ~ ${retEnd}`;
+        
+        // 產生統計清單表格
+        let html = `<table style="width: 100%; border-collapse: collapse; margin-top: -1px; background: white;">
+            <thead>
+                <tr>
+                    <th style="border: 1px solid #aaa; padding: 8px; background: #f0f0f0;">鳥類名稱</th>
+                    <th style="border: 1px solid #aaa; padding: 8px; background: #f0f0f0;">去程</th>
+                    <th style="border: 1px solid #aaa; padding: 8px; background: #f0f0f0;">回程</th>
+                    <th style="border: 1px solid #aaa; padding: 8px; background: #f0f0f0;">總計</th>
+                </tr>
+            </thead><tbody>`;
         
         let totalOut = 0, totalRet = 0, grandTotal = 0;
         let sortedBirds = [...data.birdSpecies].sort((a, b) => {
@@ -324,12 +548,22 @@
             const total = out + ret;
             if (total > 0) {
                 totalOut += out; totalRet += ret; grandTotal += total;
-                html += `<tr><td><strong>${bird}</strong></td><td>${out}</td><td>${ret}</td><td class="total-col">${total}</td></tr>`;
+                html += `<tr>
+                    <td style="border: 1px solid #aaa; padding: 8px;"><strong>${bird}</strong></td>
+                    <td style="border: 1px solid #aaa; padding: 8px;">${out}</td>
+                    <td style="border: 1px solid #aaa; padding: 8px;">${ret}</td>
+                    <td style="border: 1px solid #aaa; padding: 8px;" class="total-col">${total}</td>
+                </tr>`;
             }
         });
         
         if (grandTotal > 0) {
-            html += `<tr style="background-color: #f8f9fa;"><td><strong>總計</strong></td><td><strong>${totalOut}</strong></td><td><strong>${totalRet}</strong></td><td class="total-col"><strong>${grandTotal}</strong></td></tr>`;
+            html += `<tr style="background-color: #e8f0fe;">
+                <td style="border: 1px solid #aaa; padding: 8px;"><strong>總計</strong></td>
+                <td style="border: 1px solid #aaa; padding: 8px;"><strong>${totalOut}</strong></td>
+                <td style="border: 1px solid #aaa; padding: 8px;"><strong>${totalRet}</strong></td>
+                <td style="border: 1px solid #aaa; padding: 8px;" class="total-col"><strong>${grandTotal}</strong></td>
+            </tr>`;
         }
         html += `</tbody></table>`;
         document.getElementById('table-container').innerHTML = html;
@@ -338,16 +572,16 @@
     function hideSummary() {
         document.getElementById('record-section').style.display = 'block';
         document.getElementById('summary-section').style.display = 'none';
+        document.body.style.backgroundColor = ""; 
+        setPhase(currentPhase);
         window.scrollTo(0, 0);
     }
 
-    // --- 名單匯入設定邏輯 ---
     function showSettings() {
         document.getElementById('record-section').style.display = 'none';
         document.getElementById('summary-section').style.display = 'none';
         document.getElementById('settings-section').style.display = 'block';
-        
-        // 將目前的名單轉成換行格式填入文字框
+        document.body.style.backgroundColor = "#f0f2f5";
         document.getElementById('import-textarea').value = commonBirds.join('\n');
         window.scrollTo(0, 0);
     }
@@ -355,13 +589,13 @@
     function hideSettings() {
         document.getElementById('settings-section').style.display = 'none';
         document.getElementById('record-section').style.display = 'block';
+        document.body.style.backgroundColor = ""; 
+        setPhase(currentPhase);
         window.scrollTo(0, 0);
     }
 
     function saveCustomBirds() {
         const text = document.getElementById('import-textarea').value;
-        
-        // 支援換行、半形逗號、全形逗號、頓號分割，並過濾掉空白
         const newBirds = text.split(/[\n,，、]+/).map(b => b.trim()).filter(b => b !== '');
         
         if (newBirds.length === 0) {
@@ -369,36 +603,43 @@
             return;
         }
 
-        // 移除重複的鳥種 (Set 的特性)
         commonBirds = [...new Set(newBirds)];
-        
-        // 儲存進設備記憶體
+        commonBirds.sort((a, b) => a.localeCompare(b, 'zh-TW', { collation: 'stroke' }));
         localStorage.setItem(LIST_STORAGE_KEY, JSON.stringify(commonBirds));
         
         renderQuickButtons();
-        showModal('鳥類名單已成功更新！', false, () => {
+        showModal('鳥類名單已成功更新，並已依筆劃排序！', false, () => {
             hideSettings();
         });
     }
 
     function copyTable() {
-        const table = document.getElementById('result-table');
-        if (!table || table.rows.length <= 1) { showModal('目前沒有資料可以複製喔！', false); return; }
+        const containerToCopy = document.getElementById('export-container');
         let range, sel;
         if (document.createRange && window.getSelection) {
-            range = document.createRange(); sel = window.getSelection(); sel.removeAllRanges();
-            try { range.selectNodeContents(table); sel.addRange(range); } catch (e) { range.selectNode(table); sel.addRange(range); }
-            document.execCommand('copy'); sel.removeAllRanges(); 
-            showModal('統計資料已複製成功！', false);
+            range = document.createRange(); 
+            sel = window.getSelection(); 
+            sel.removeAllRanges();
+            try { 
+                range.selectNodeContents(containerToCopy); 
+                sel.addRange(range); 
+            } catch (e) { 
+                range.selectNode(containerToCopy); 
+                sel.addRange(range); 
+            }
+            document.execCommand('copy'); 
+            sel.removeAllRanges(); 
+            showModal('所有調查資料已複製！\n您可以直接開啟 Excel 並點選「貼上」，表格會自動排好版面。', false);
         }
     }
 
     function confirmReset() {
-        showModal('確定要清空所有紀錄嗎？\n這將刪除目前設備中的所有調查資料，且無法還原。', true, () => {
-            data = { birdSpecies: [], records: { outbound: {}, return: {} } };
+        showModal('確定要開啟新調查嗎？\n這將清空包含日期、時間與所有鳥類的數量紀錄。', true, () => {
+            data = { meta: { date: '', weather: '', outboundStart: '', outboundEnd: '', returnStart: '', returnEnd: '' }, birdSpecies: [], records: { outbound: {}, return: {} } };
             localStorage.removeItem(STORAGE_KEY);
-            renderBirdList();
-            showModal('資料已全數清空，可以開始新的調查了！', false);
+            init(); // 重新初始化畫面與表單
+            renderQuickButtons(); 
+            showModal('已為您準備好全新空白的調查表！', false);
         });
     }
 
@@ -420,9 +661,10 @@
         }
     }
 
-    // 啟動程式
     init();
 </script>
 
 </body>
 </html>
+
+
