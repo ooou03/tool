@@ -30,11 +30,9 @@
         body.phase-outbound { background-color: var(--bg-outbound); }
         body.phase-return { background-color: var(--bg-return); }
         
-        /* 標題設計 */
         .main-title { color: #202124; text-align: center; margin: 10px 0 5px 0; font-size: 22px; font-weight: 800; }
         .sub-title { color: #5f6368; text-align: center; margin: 0 0 20px 0; font-size: 16px; font-weight: bold; }
         
-        /* 調查基本資料面板 */
         .meta-toggle { background: #fff; padding: 12px; border-radius: 12px; text-align: center; font-weight: bold; color: var(--primary); cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 15px; border: 2px dashed var(--primary); transition: 0.2s; }
         .meta-toggle:active { background: #f0f2f5; }
         .meta-panel { background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: none; }
@@ -44,16 +42,16 @@
         .meta-input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box; background: #fafafa; outline: none; transition: 0.2s; }
         .meta-input:focus { border-color: var(--primary); background: #fff; }
         .meta-time-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .meta-section-title { font-weight: 800; color: var(--primary); margin: 20px 0 10px 0; border-bottom: 2px solid var(--bg-outbound); padding-bottom: 5px; }
         
-        /* 頁籤切換 */
         .tabs { display: flex; margin-bottom: 15px; border-radius: 12px; overflow: hidden; background: #fff; padding: 5px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .tab-btn { flex: 1; padding: 12px; border: none; background: none; font-size: 18px; color: #5f6368; border-radius: 8px; cursor: pointer; transition: background 0.2s, color 0.2s; }
         .tab-btn.active-outbound { background-color: var(--primary); color: white; font-weight: bold; }
         .tab-btn.active-return { background-color: var(--success); color: white; font-weight: bold; }
         
         .input-group { display: flex; gap: 8px; margin-bottom: 20px; }
-        input[type="text"] { flex: 1; padding: 14px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; outline: none; transition: border-color 0.2s; }
-        input[type="text"]:focus { border-color: var(--primary); }
+        input[type="text"].bird-add-input { flex: 1; padding: 14px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; outline: none; transition: border-color 0.2s; }
+        input[type="text"].bird-add-input:focus { border-color: var(--primary); }
         .add-btn { padding: 0 20px; background: var(--dark); color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; }
         .add-btn:active { opacity: 0.8; }
 
@@ -86,20 +84,24 @@
         .btn-back { background: var(--dark); }
 
         #summary-section, #settings-section { display: none; }
-        .table-wrapper { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; padding: 15px; }
-        table { width: 100%; border-collapse: collapse; }
+        /* 為避免表格在手機上變形，加入橫向捲動 */
+        .table-wrapper { background: white; border-radius: 12px; overflow-x: auto; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; padding: 15px; }
+        table { width: 100%; min-width: 500px; border-collapse: collapse; }
         th, td { padding: 10px; text-align: center; border: 1px solid #ddd; font-size: 15px; }
         th { background: #f8f9fa; color: #5f6368; font-weight: 600; }
         .total-col { font-weight: bold; color: var(--primary); }
 
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: white; padding: 25px; border-radius: 16px; width: 85%; max-width: 350px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .modal-content { background: white; padding: 25px; border-radius: 16px; width: 85%; max-width: 450px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
         .modal-text { font-size: 18px; color: #202124; margin-bottom: 25px; line-height: 1.5; }
         .modal-buttons { display: flex; gap: 10px; }
         .modal-btn { flex: 1; padding: 12px; border-radius: 8px; border: none; font-size: 16px; font-weight: bold; cursor: pointer; color: white; }
         .modal-btn-cancel { background: var(--dark); }
         .modal-btn-confirm { background: var(--primary); }
         .modal-btn-danger { background: var(--danger); }
+        
+        #sig-canvas { border: 2px solid #ccc; border-radius: 8px; background: #fff; width: 100%; height: 250px; touch-action: none; cursor: crosshair; }
+        .sig-preview { border: 1px solid #ddd; border-radius: 4px; display: none; margin-top: 10px; background: white; max-width: 100%; object-fit: contain; }
     </style>
 </head>
 <body class="phase-outbound">
@@ -112,6 +114,7 @@
     <div class="meta-toggle" id="meta-toggle-btn" onclick="toggleMeta()">📋 填寫/修改調查基本資料 (點此展開)</div>
     
     <div class="meta-panel" id="meta-panel">
+        <div class="meta-section-title">📅 時間與環境</div>
         <div class="meta-row">
             <label>調查日期：</label>
             <div style="display: flex; align-items: center; gap: 10px;">
@@ -150,7 +153,34 @@
                 <input type="time" id="meta-ret-end" class="meta-input" onchange="saveMeta()">
             </div>
         </div>
-        <button onclick="toggleMeta()" style="width: 100%; padding: 12px; border-radius: 8px; border: none; background: #e0e0e0; font-size: 16px; font-weight: bold; margin-top: 5px; cursor: pointer;">⬆️ 收起基本資料</button>
+
+        <div class="meta-section-title">👤 調查人員</div>
+        <div class="meta-row">
+            <label>領隊：</label>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="meta-leader" class="meta-input" placeholder="可輸入姓名" onchange="saveMeta()" style="flex: 1;">
+                <button onclick="openSignature('leader')" style="padding: 0 15px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; white-space: nowrap; cursor: pointer;">✍️ 簽名</button>
+            </div>
+            <img id="preview-sig-leader" class="sig-preview" style="max-height: 80px;">
+        </div>
+        <div class="meta-row meta-time-grid">
+            <div>
+                <label>聯絡電話：</label>
+                <input type="tel" id="meta-phone" class="meta-input" placeholder="09XX-XXXXXX" onchange="saveMeta()">
+            </div>
+            <div>
+                <label>E-mail：</label>
+                <input type="email" id="meta-email" class="meta-input" placeholder="輸入電子郵件" onchange="saveMeta()">
+            </div>
+        </div>
+        <div class="meta-row">
+            <label>隊員：</label>
+            <textarea id="meta-members" class="meta-input" rows="2" placeholder="可輸入隊員名單 (或是直接使用下方簽名板)" onchange="saveMeta()"></textarea>
+            <button onclick="openSignature('members')" style="width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; margin-top: 10px; cursor: pointer;">✍️ 開啟隊員聯合簽名板</button>
+            <img id="preview-sig-members" class="sig-preview" style="max-height: 150px; width: 100%;">
+        </div>
+
+        <button onclick="toggleMeta()" style="width: 100%; padding: 12px; border-radius: 8px; border: none; background: #e0e0e0; font-size: 16px; font-weight: bold; margin-top: 10px; cursor: pointer;">⬆️ 收起基本資料</button>
     </div>
     
     <div class="tabs">
@@ -159,7 +189,7 @@
     </div>
 
     <div class="input-group">
-        <input type="text" id="bird-input" placeholder="看見名單外的鳥？ (如: 翠鳥)" onkeypress="if(event.key==='Enter')addBird()">
+        <input type="text" id="bird-input" class="bird-add-input" placeholder="看見名單外的鳥？ (如: 翠鳥)" onkeypress="if(event.key==='Enter')addBird()">
         <button class="add-btn" onclick="addBird()">新增</button>
     </div>
 
@@ -171,14 +201,10 @@
                 <button onclick="showSettings()" style="background:none; border:none; color:var(--dark); font-size:15px; font-weight:bold; cursor:pointer; padding:5px;">⚙️ 編輯</button>
             </div>
         </div>
-        <div class="quick-buttons" id="quick-buttons-container">
-            <!-- 快速按鈕會動態顯示在這裡 -->
-        </div>
+        <div class="quick-buttons" id="quick-buttons-container"></div>
     </div>
 
-    <div class="bird-list" id="bird-list-container">
-        <!-- 鳥類清單會顯示在這裡 -->
-    </div>
+    <div class="bird-list" id="bird-list-container"></div>
 
     <div class="footer-btns">
         <button class="btn-action btn-summary" onclick="showSummary()">📊 查看與匯出統計</button>
@@ -189,32 +215,49 @@
 <div id="summary-section">
     <h2>📊 調查統計結果</h2>
     
-    <!-- 匯出容器：包含表頭與資料 -->
+    <!-- 匯出容器 -->
     <div class="table-wrapper" id="export-container">
-        <!-- 這個區塊的排版專門為了複製到 Excel 而設計 -->
         <div style="text-align: center; margin-bottom: 15px;">
             <h3 style="margin: 0 0 5px 0; font-size: 18px;">淡水河流域沿岸濕地鳥類同步調查記錄表</h3>
             <p style="margin: 0; font-size: 14px; color: #555;">樣線名稱： 竹圍</p>
         </div>
         
+        <!-- 
+          表頭區塊：為了與下方 6 欄 (序號, 名稱, 去, 回, 總, 備註) 完美對齊，
+          這裡的 colspan 加起來會等於 6 欄。 
+        -->
         <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; background: #fdfdfd;">
             <tr>
-                <td style="border: 1px solid #aaa; padding: 8px; background: #f0f0f0; font-weight: bold; width: 25%;">調查日期</td>
-                <td style="border: 1px solid #aaa; padding: 8px; text-align: left;" colspan="3" id="export-date"></td>
+                <td style="border: 1px solid #aaa; padding: 8px; background: #f0f0f0; font-weight: bold; width: 16%;">調查日期</td>
+                <td style="border: 1px solid #aaa; padding: 8px; text-align: left;" colspan="5" id="export-date"></td>
             </tr>
             <tr>
                 <td style="border: 1px solid #aaa; padding: 8px; background: #f0f0f0; font-weight: bold;">天氣</td>
-                <td style="border: 1px solid #aaa; padding: 8px; text-align: left;" colspan="3" id="export-weather"></td>
+                <td style="border: 1px solid #aaa; padding: 8px; text-align: left;" colspan="5" id="export-weather"></td>
             </tr>
             <tr>
                 <td style="border: 1px solid #aaa; padding: 8px; background: #f0f0f0; font-weight: bold;">去程時間</td>
-                <td style="border: 1px solid #aaa; padding: 8px; text-align: left; width: 25%;" id="export-out-time"></td>
-                <td style="border: 1px solid #aaa; padding: 8px; background: #f0f0f0; font-weight: bold; width: 25%;">回程時間</td>
-                <td style="border: 1px solid #aaa; padding: 8px; text-align: left; width: 25%;" id="export-ret-time"></td>
+                <td style="border: 1px solid #aaa; padding: 8px; text-align: left;" colspan="2" id="export-out-time"></td>
+                <td style="border: 1px solid #aaa; padding: 8px; background: #f0f0f0; font-weight: bold;">回程時間</td>
+                <td style="border: 1px solid #aaa; padding: 8px; text-align: left;" colspan="2" id="export-ret-time"></td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid #aaa; padding: 8px; background: #f0f0f0; font-weight: bold; vertical-align: middle;">領隊</td>
+                <td style="border: 1px solid #aaa; padding: 8px; text-align: left; vertical-align: middle;" colspan="2" id="export-leader"></td>
+                <td style="border: 1px solid #aaa; padding: 8px; background: #f0f0f0; font-weight: bold; vertical-align: middle;">聯絡電話</td>
+                <td style="border: 1px solid #aaa; padding: 8px; text-align: left; vertical-align: middle;" colspan="2" id="export-phone"></td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid #aaa; padding: 8px; background: #f0f0f0; font-weight: bold;">E-mail</td>
+                <td style="border: 1px solid #aaa; padding: 8px; text-align: left;" colspan="5" id="export-email"></td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid #aaa; padding: 8px; background: #f0f0f0; font-weight: bold; vertical-align: top;">隊員</td>
+                <td style="border: 1px solid #aaa; padding: 8px; text-align: left; min-height: 120px; vertical-align: top; white-space: pre-wrap;" colspan="5" id="export-members"></td>
             </tr>
         </table>
 
-        <!-- 鳥類統計表格將會插入到這個 div 裡面 -->
+        <!-- 鳥類統計區塊 (含序號與備註) -->
         <div id="table-container"></div>
     </div>
     
@@ -234,6 +277,7 @@
     </div>
 </div>
 
+<!-- 提示框 -->
 <div id="custom-modal" class="modal-overlay">
     <div class="modal-content">
         <div id="modal-text" class="modal-text">提示訊息</div>
@@ -244,7 +288,7 @@
     </div>
 </div>
 
-<!-- 快速輸入數量對話框 -->
+<!-- 快速輸入數量 -->
 <div id="prompt-modal" class="modal-overlay">
     <div class="modal-content">
         <div id="prompt-title" class="modal-text" style="margin-bottom: 15px; font-weight: bold;"></div>
@@ -257,27 +301,54 @@
     </div>
 </div>
 
+<!-- 數位簽名板 Modal -->
+<div id="signature-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 600px; width: 95%;">
+        <div id="sig-title" class="modal-text" style="margin-bottom: 15px; font-weight: bold;">✍️ 簽名板</div>
+        <canvas id="sig-canvas"></canvas>
+        <div class="modal-buttons" style="margin-top: 15px; flex-wrap: wrap; gap: 10px;">
+            <button class="modal-btn" style="background: #9aa0a6; color: white;" onclick="clearSignature()">🧹 清除重寫</button>
+            <button class="modal-btn modal-btn-cancel" onclick="closeSignature()">取消</button>
+            <button class="modal-btn" style="background: var(--primary); color: white; flex-basis: 100%;" onclick="saveSignature()">💾 儲存簽名</button>
+        </div>
+    </div>
+</div>
+
 <script>
     let currentPhase = 'outbound';
     let data = {
-        meta: { date: '', weather: '', outboundStart: '', outboundEnd: '', returnStart: '', returnEnd: '' },
+        meta: { 
+            date: '', weather: '', outboundStart: '', outboundEnd: '', returnStart: '', returnEnd: '',
+            leader: '', phone: '', email: '', members: '', 
+            leaderSignature: '', membersSignature: ''
+        },
         birdSpecies: [],
         records: { outbound: {}, return: {} }
     };
 
     const defaultCommonBirds = ['小白鷺', '白頭翁', '綠繡眼', '麻雀', '夜鷺', '珠頸斑鳩', '黑冠麻鷺', '大卷尾'];
     let commonBirds = [];
-    const STORAGE_KEY = 'offlineBirdSurveyData_v3'; // 更新 Key 避免與舊資料結構衝突
+    const STORAGE_KEY = 'offlineBirdSurveyData_v5'; 
     const LIST_STORAGE_KEY = 'customBirdList_v1'; 
     let editingBird = null;
+
+    let currentSigType = '';
+    const canvas = document.getElementById('sig-canvas');
+    const ctx = canvas.getContext('2d');
+    let isDrawing = false;
 
     function init() {
         const savedData = localStorage.getItem(STORAGE_KEY);
         if (savedData) {
             try {
                 data = JSON.parse(savedData);
-                // 確保舊版資料升級時有 meta 物件
-                if(!data.meta) data.meta = { date: '', weather: '', outboundStart: '', outboundEnd: '', returnStart: '', returnEnd: '' };
+                if(!data.meta) data.meta = {};
+                data.meta.leader = data.meta.leader || '';
+                data.meta.phone = data.meta.phone || '';
+                data.meta.email = data.meta.email || '';
+                data.meta.members = data.meta.members || '';
+                data.meta.leaderSignature = data.meta.leaderSignature || '';
+                data.meta.membersSignature = data.meta.membersSignature || '';
             } catch (e) {
                 console.error("讀取資料失敗，重新初始化", e);
             }
@@ -293,16 +364,21 @@
         commonBirds.sort((a, b) => a.localeCompare(b, 'zh-TW', { collation: 'stroke' }));
         data.birdSpecies.sort((a, b) => a.localeCompare(b, 'zh-TW', { collation: 'stroke' }));
 
-        // 填入 Meta 資料到 UI
         document.getElementById('meta-date').value = data.meta.date || '';
         document.getElementById('meta-weather').value = data.meta.weather || '';
         document.getElementById('meta-out-start').value = data.meta.outboundStart || '';
         document.getElementById('meta-out-end').value = data.meta.outboundEnd || '';
         document.getElementById('meta-ret-start').value = data.meta.returnStart || '';
         document.getElementById('meta-ret-end').value = data.meta.returnEnd || '';
+        
+        document.getElementById('meta-leader').value = data.meta.leader || '';
+        document.getElementById('meta-phone').value = data.meta.phone || '';
+        document.getElementById('meta-email').value = data.meta.email || '';
+        document.getElementById('meta-members').value = data.meta.members || '';
+        
         updateWeekday();
+        updateSignaturePreviews(); 
 
-        // 若無日期資料，預設展開面板提醒填寫
         if(!data.meta.date) {
             document.getElementById('meta-panel').style.display = 'block';
             document.getElementById('meta-toggle-btn').innerText = '📋 點擊收起基本資料';
@@ -315,7 +391,6 @@
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     }
 
-    // --- Meta 資料控制 ---
     function toggleMeta() {
         const panel = document.getElementById('meta-panel');
         const btn = document.getElementById('meta-toggle-btn');
@@ -335,6 +410,12 @@
         data.meta.outboundEnd = document.getElementById('meta-out-end').value;
         data.meta.returnStart = document.getElementById('meta-ret-start').value;
         data.meta.returnEnd = document.getElementById('meta-ret-end').value;
+        
+        data.meta.leader = document.getElementById('meta-leader').value.trim();
+        data.meta.phone = document.getElementById('meta-phone').value.trim();
+        data.meta.email = document.getElementById('meta-email').value.trim();
+        data.meta.members = document.getElementById('meta-members').value.trim();
+        
         updateWeekday();
         saveData();
     }
@@ -350,6 +431,95 @@
             weekSpan.innerText = '';
         }
     }
+
+    // --- 簽名板核心邏輯 ---
+    function openSignature(type) {
+        currentSigType = type;
+        document.getElementById('sig-title').innerText = type === 'leader' ? '✍️ 領隊專用簽名板' : '✍️ 隊員聯合簽名板 (可多人同時簽)';
+        const modal = document.getElementById('signature-modal');
+        modal.style.display = 'flex';
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = type === 'members' ? 350 : 200; 
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.lineWidth = 4;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.strokeStyle = '#000';
+    }
+
+    function closeSignature() {
+        document.getElementById('signature-modal').style.display = 'none';
+    }
+
+    function clearSignature() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function saveSignature() {
+        const dataUrl = canvas.toDataURL('image/png');
+        if (currentSigType === 'leader') {
+            data.meta.leaderSignature = dataUrl;
+        } else {
+            data.meta.membersSignature = dataUrl;
+        }
+        saveData();
+        updateSignaturePreviews();
+        closeSignature();
+    }
+
+    function updateSignaturePreviews() {
+        const imgLeader = document.getElementById('preview-sig-leader');
+        if (data.meta.leaderSignature) {
+            imgLeader.src = data.meta.leaderSignature;
+            imgLeader.style.display = 'block';
+        } else {
+            imgLeader.style.display = 'none';
+        }
+
+        const imgMembers = document.getElementById('preview-sig-members');
+        if (data.meta.membersSignature) {
+            imgMembers.src = data.meta.membersSignature;
+            imgMembers.style.display = 'block';
+        } else {
+            imgMembers.style.display = 'none';
+        }
+    }
+
+    function startPosition(e) {
+        isDrawing = true;
+        draw(e);
+    }
+    function endPosition() {
+        isDrawing = false;
+        ctx.beginPath(); 
+    }
+    function draw(e) {
+        if (!isDrawing) return;
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;   
+        const scaleY = canvas.height / rect.height; 
+        let clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+        let clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+        const x = (clientX - rect.left) * scaleX;
+        const y = (clientY - rect.top) * scaleY;
+
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+    }
+
+    canvas.addEventListener('mousedown', startPosition);
+    canvas.addEventListener('mouseup', endPosition);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseout', endPosition);
+    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startPosition(e); }, { passive: false });
+    canvas.addEventListener('touchend', (e) => { e.preventDefault(); endPosition(); }, { passive: false });
+    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e); }, { passive: false });
 
     // --- 相位與鳥類紀錄控制 ---
     function setPhase(phase) {
@@ -504,14 +674,13 @@
         closePrompt();
     }
 
-    // --- 匯出功能 ---
+    // --- 匯出功能 (包含序號與備註) ---
     function showSummary() {
         document.getElementById('record-section').style.display = 'none';
         document.getElementById('summary-section').style.display = 'block';
         document.body.style.backgroundColor = "#f0f2f5";
         window.scrollTo(0, 0);
         
-        // 填寫匯出表頭資料
         const weekStr = document.getElementById('meta-weekday').innerText;
         document.getElementById('export-date').innerText = data.meta.date ? `${data.meta.date} (${weekStr})` : '未填寫';
         document.getElementById('export-weather').innerText = data.meta.weather || '未填寫';
@@ -524,18 +693,37 @@
         const retEnd = data.meta.returnEnd || '--:--';
         document.getElementById('export-ret-time').innerText = `${retStart} ~ ${retEnd}`;
         
-        // 產生統計清單表格
+        let leaderHtml = data.meta.leader || '';
+        if (data.meta.leaderSignature) {
+            leaderHtml += `<br><img src="${data.meta.leaderSignature}" style="max-height: 50px; margin-top: 5px;">`;
+        }
+        document.getElementById('export-leader').innerHTML = leaderHtml;
+        
+        document.getElementById('export-phone').innerText = data.meta.phone || '';
+        document.getElementById('export-email').innerText = data.meta.email || '';
+        
+        let membersHtml = data.meta.members ? data.meta.members.replace(/\n/g, '<br>') : '';
+        if (data.meta.membersSignature) {
+            membersHtml += `<br><img src="${data.meta.membersSignature}" style="max-height: 120px; max-width: 100%; object-fit: contain; margin-top: 5px;">`;
+        }
+        document.getElementById('export-members').innerHTML = membersHtml;
+        
+        // 產生統計清單表格 (加入 序號 與 備註)
         let html = `<table style="width: 100%; border-collapse: collapse; margin-top: -1px; background: white;">
             <thead>
                 <tr>
+                    <th style="border: 1px solid #aaa; padding: 8px; background: #f0f0f0; width: 8%;">序號</th>
                     <th style="border: 1px solid #aaa; padding: 8px; background: #f0f0f0;">鳥類名稱</th>
-                    <th style="border: 1px solid #aaa; padding: 8px; background: #f0f0f0;">去程</th>
-                    <th style="border: 1px solid #aaa; padding: 8px; background: #f0f0f0;">回程</th>
-                    <th style="border: 1px solid #aaa; padding: 8px; background: #f0f0f0;">總計</th>
+                    <th style="border: 1px solid #aaa; padding: 8px; background: #f0f0f0; width: 12%;">去程</th>
+                    <th style="border: 1px solid #aaa; padding: 8px; background: #f0f0f0; width: 12%;">回程</th>
+                    <th style="border: 1px solid #aaa; padding: 8px; background: #f0f0f0; width: 12%;">總計</th>
+                    <th style="border: 1px solid #aaa; padding: 8px; background: #f0f0f0; width: 22%;">備註</th>
                 </tr>
             </thead><tbody>`;
         
         let totalOut = 0, totalRet = 0, grandTotal = 0;
+        let serialNumber = 1; // 序號計數器
+        
         let sortedBirds = [...data.birdSpecies].sort((a, b) => {
             let totalA = data.records.outbound[a] + data.records.return[a];
             let totalB = data.records.outbound[b] + data.records.return[b];
@@ -549,20 +737,23 @@
             if (total > 0) {
                 totalOut += out; totalRet += ret; grandTotal += total;
                 html += `<tr>
+                    <td style="border: 1px solid #aaa; padding: 8px; text-align: center;">${serialNumber++}</td>
                     <td style="border: 1px solid #aaa; padding: 8px;"><strong>${bird}</strong></td>
-                    <td style="border: 1px solid #aaa; padding: 8px;">${out}</td>
-                    <td style="border: 1px solid #aaa; padding: 8px;">${ret}</td>
-                    <td style="border: 1px solid #aaa; padding: 8px;" class="total-col">${total}</td>
+                    <td style="border: 1px solid #aaa; padding: 8px; text-align: center;">${out}</td>
+                    <td style="border: 1px solid #aaa; padding: 8px; text-align: center;">${ret}</td>
+                    <td style="border: 1px solid #aaa; padding: 8px; text-align: center;" class="total-col">${total}</td>
+                    <td style="border: 1px solid #aaa; padding: 8px;"></td>
                 </tr>`;
             }
         });
         
         if (grandTotal > 0) {
             html += `<tr style="background-color: #e8f0fe;">
-                <td style="border: 1px solid #aaa; padding: 8px;"><strong>總計</strong></td>
-                <td style="border: 1px solid #aaa; padding: 8px;"><strong>${totalOut}</strong></td>
-                <td style="border: 1px solid #aaa; padding: 8px;"><strong>${totalRet}</strong></td>
-                <td style="border: 1px solid #aaa; padding: 8px;" class="total-col"><strong>${grandTotal}</strong></td>
+                <td style="border: 1px solid #aaa; padding: 8px; text-align: center;" colspan="2"><strong>總計</strong></td>
+                <td style="border: 1px solid #aaa; padding: 8px; text-align: center;"><strong>${totalOut}</strong></td>
+                <td style="border: 1px solid #aaa; padding: 8px; text-align: center;"><strong>${totalRet}</strong></td>
+                <td style="border: 1px solid #aaa; padding: 8px; text-align: center;" class="total-col"><strong>${grandTotal}</strong></td>
+                <td style="border: 1px solid #aaa; padding: 8px;"></td>
             </tr>`;
         }
         html += `</tbody></table>`;
@@ -629,15 +820,20 @@
             }
             document.execCommand('copy'); 
             sel.removeAllRanges(); 
-            showModal('所有調查資料已複製！\n您可以直接開啟 Excel 並點選「貼上」，表格會自動排好版面。', false);
+            
+            showModal('所有調查資料(包含簽名圖片)已複製！\n開啟 Excel 貼上時，請選擇「保留來源格式」，表格就會完美呈現。', false);
         }
     }
 
     function confirmReset() {
-        showModal('確定要開啟新調查嗎？\n這將清空包含日期、時間與所有鳥類的數量紀錄。', true, () => {
-            data = { meta: { date: '', weather: '', outboundStart: '', outboundEnd: '', returnStart: '', returnEnd: '' }, birdSpecies: [], records: { outbound: {}, return: {} } };
+        showModal('確定要開啟新調查嗎？\n這將清空包含日期、人員、簽名與所有的數量紀錄。', true, () => {
+            data = { 
+                meta: { date: '', weather: '', outboundStart: '', outboundEnd: '', returnStart: '', returnEnd: '', leader: '', phone: '', email: '', members: '', leaderSignature: '', membersSignature: '' }, 
+                birdSpecies: [], 
+                records: { outbound: {}, return: {} } 
+            };
             localStorage.removeItem(STORAGE_KEY);
-            init(); // 重新初始化畫面與表單
+            init(); 
             renderQuickButtons(); 
             showModal('已為您準備好全新空白的調查表！', false);
         });
