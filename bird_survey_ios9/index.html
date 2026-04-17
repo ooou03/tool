@@ -7,16 +7,6 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>淡水河流域鳥類調查紀錄器</title>
     <style>
-        :root {
-            --primary: #1a73e8; 
-            --success: #34a853; 
-            --danger: #ea4335;
-            --warning: #f9ab00;
-            --dark: #3c4043;
-            --bg-outbound: #e8f0fe; 
-            --bg-return: #e6f4ea;   
-        }
-
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
             max-width: 600px; 
@@ -28,74 +18,74 @@
             transition: background-color 0.3s ease; 
         }
 
-        body.phase-outbound { background-color: var(--bg-outbound); }
-        body.phase-return { background-color: var(--bg-return); }
+        body.phase-outbound { background-color: #e8f0fe; }
+        body.phase-return { background-color: #e6f4ea; }
         
         .main-title { color: #202124; text-align: center; margin: 10px 0 5px 0; font-size: 22px; font-weight: 800; }
         .sub-title { color: #5f6368; text-align: center; margin: 0 0 20px 0; font-size: 16px; font-weight: bold; }
         
-        .meta-toggle { background: #fff; padding: 12px; border-radius: 12px; text-align: center; font-weight: bold; color: var(--primary); cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 15px; border: 2px dashed var(--primary); }
+        .meta-toggle { background: #fff; padding: 12px; border-radius: 12px; text-align: center; font-weight: bold; color: #1a73e8; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 15px; border: 2px dashed #1a73e8; }
         .meta-panel { background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: none; }
         .meta-row { margin-bottom: 15px; }
         .meta-row label { display: block; font-size: 15px; color: #3c4043; margin-bottom: 6px; font-weight: bold; }
         .meta-input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box; background: #fafafa; outline: none; }
         
-        /* 替換 iOS 9 不支援的 CSS Grid 為 Flexbox */
-        .meta-time-grid { display: -webkit-flex; display: flex; -webkit-justify-content: space-between; justify-content: space-between; }
+        /* 舊版 iOS Flexbox 支援 */
+        .meta-time-grid { display: -webkit-box; display: -webkit-flex; display: flex; -webkit-box-pack: justify; -webkit-justify-content: space-between; justify-content: space-between; }
         .meta-time-grid > div { width: 48%; }
         
-        .meta-section-title { font-weight: 800; color: var(--primary); margin: 20px 0 10px 0; border-bottom: 2px solid var(--bg-outbound); padding-bottom: 5px; }
+        .meta-section-title { font-weight: 800; color: #1a73e8; margin: 20px 0 10px 0; border-bottom: 2px solid #e8f0fe; padding-bottom: 5px; }
         
-        .tabs { display: -webkit-flex; display: flex; margin-bottom: 15px; border-radius: 12px; overflow: hidden; background: #fff; padding: 5px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .tab-btn { -webkit-flex: 1; flex: 1; padding: 12px; border: none; background: none; font-size: 18px; color: #5f6368; border-radius: 8px; cursor: pointer; }
-        .tab-btn.active-outbound { background-color: var(--primary); color: white; font-weight: bold; }
-        .tab-btn.active-return { background-color: var(--success); color: white; font-weight: bold; }
+        .tabs { display: -webkit-box; display: -webkit-flex; display: flex; margin-bottom: 15px; border-radius: 12px; overflow: hidden; background: #fff; padding: 5px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .tab-btn { -webkit-box-flex: 1; -webkit-flex: 1; flex: 1; padding: 12px; border: none; background: none; font-size: 18px; color: #5f6368; border-radius: 8px; cursor: pointer; }
+        .tab-btn.active-outbound { background-color: #1a73e8; color: white; font-weight: bold; }
+        .tab-btn.active-return { background-color: #34a853; color: white; font-weight: bold; }
         
-        .input-group { display: -webkit-flex; display: flex; margin-bottom: 20px; }
-        input[type="text"].bird-add-input { -webkit-flex: 1; flex: 1; padding: 14px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; outline: none; margin-right: 8px; }
-        .add-btn { padding: 0 20px; background: var(--dark); color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; }
+        .input-group { display: -webkit-box; display: -webkit-flex; display: flex; margin-bottom: 20px; }
+        input[type="text"].bird-add-input { -webkit-box-flex: 1; -webkit-flex: 1; flex: 1; padding: 14px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; outline: none; margin-right: 8px; }
+        .add-btn { padding: 0 20px; background: #3c4043; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; }
 
         .quick-select { margin-bottom: 20px; }
         .quick-label { font-size: 14px; color: #5f6368; font-weight: bold; }
-        .quick-buttons { display: -webkit-flex; display: flex; -webkit-flex-wrap: wrap; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-        .quick-btn { padding: 10px 14px; background: #fff; color: #202124; border: 1px solid #ccc; border-radius: 20px; font-size: 15px; cursor: pointer; margin-right: 5px; margin-bottom: 5px; }
+        .quick-buttons { display: -webkit-box; display: -webkit-flex; display: flex; -webkit-flex-wrap: wrap; flex-wrap: wrap; margin-top: 10px; }
+        .quick-btn { padding: 10px 14px; background: #fff; color: #202124; border: 1px solid #ccc; border-radius: 20px; font-size: 15px; cursor: pointer; margin-right: 8px; margin-bottom: 8px; }
 
-        .bird-list { display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; padding-bottom: 20px; }
-        .bird-item { display: -webkit-flex; display: flex; -webkit-justify-content: space-between; justify-content: space-between; -webkit-align-items: center; align-items: center; background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .bird-info { -webkit-flex: 1; flex: 1; }
+        .bird-list { display: -webkit-box; display: -webkit-flex; display: flex; -webkit-box-orient: vertical; -webkit-box-direction: normal; -webkit-flex-direction: column; flex-direction: column; padding-bottom: 20px; }
+        .bird-item { display: -webkit-box; display: -webkit-flex; display: flex; -webkit-box-pack: justify; -webkit-justify-content: space-between; justify-content: space-between; -webkit-box-align: center; -webkit-align-items: center; align-items: center; background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .bird-info { -webkit-box-flex: 1; -webkit-flex: 1; flex: 1; }
         .bird-name { font-size: 20px; font-weight: 600; color: #202124; display: block; }
-        .controls { display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; }
-        .btn-circle { width: 44px; height: 44px; border-radius: 50%; border: none; font-size: 24px; color: white; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; -webkit-justify-content: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin: 0 10px; }
-        .btn-minus { background: var(--danger); }
-        .btn-plus { background: var(--success); }
+        .controls { display: -webkit-box; display: -webkit-flex; display: flex; -webkit-box-align: center; -webkit-align-items: center; align-items: center; }
+        .btn-circle { width: 44px; height: 44px; border-radius: 50%; border: none; font-size: 24px; color: white; display: -webkit-box; display: -webkit-flex; display: flex; -webkit-box-align: center; -webkit-align-items: center; align-items: center; -webkit-box-pack: center; -webkit-justify-content: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin: 0 10px; }
+        .btn-minus { background: #ea4335; }
+        .btn-plus { background: #34a853; }
         
         .count-display { font-size: 24px; font-weight: bold; min-width: 50px; text-align: center; color: #202124; cursor: pointer; background: #fff; padding: 5px 10px; border-radius: 8px; border: 2px dashed #ccc; }
 
-        .footer-btns { margin-top: 10px; display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; padding-bottom: 30px; }
+        .footer-btns { margin-top: 10px; display: -webkit-box; display: -webkit-flex; display: flex; -webkit-box-orient: vertical; -webkit-box-direction: normal; -webkit-flex-direction: column; flex-direction: column; padding-bottom: 30px; }
         .btn-action { width: 100%; padding: 16px; border-radius: 12px; border: none; font-size: 18px; font-weight: bold; color: white; cursor: pointer; margin-bottom: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-        .btn-summary { background: var(--warning); }
-        .btn-success { background: var(--success); }
+        .btn-summary { background: #f9ab00; }
+        .btn-success { background: #34a853; }
         .btn-reset { background: #9aa0a6; font-size: 16px; margin-top: 10px; }
-        .btn-copy { background: var(--primary); }
-        .btn-back { background: var(--dark); }
+        .btn-copy { background: #1a73e8; }
+        .btn-back { background: #3c4043; }
 
         #summary-section, #settings-section { display: none; }
         .table-wrapper { background: white; border-radius: 12px; overflow-x: auto; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; padding: 15px; }
         table { width: 100%; min-width: 500px; border-collapse: collapse; }
         th, td { padding: 10px; text-align: center; border: 1px solid #ddd; font-size: 15px; }
         th { background: #f8f9fa; color: #5f6368; font-weight: 600; }
-        .total-col { font-weight: bold; color: var(--primary); }
+        .total-col { font-weight: bold; color: #1a73e8; }
 
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; -webkit-justify-content: center; justify-content: center; -webkit-align-items: center; align-items: center; z-index: 1000; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; -webkit-box-pack: center; -webkit-justify-content: center; justify-content: center; -webkit-box-align: center; -webkit-align-items: center; align-items: center; z-index: 1000; }
         .modal-content { background: white; padding: 25px; border-radius: 16px; width: 85%; max-width: 450px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
         .modal-text { font-size: 18px; color: #202124; margin-bottom: 25px; line-height: 1.5; }
-        .modal-buttons { display: -webkit-flex; display: flex; gap: 10px; margin-top: 15px;}
-        .modal-btn { -webkit-flex: 1; flex: 1; padding: 12px; border-radius: 8px; border: none; font-size: 16px; font-weight: bold; cursor: pointer; color: white; margin: 0 5px; }
-        .modal-btn-cancel { background: var(--dark); }
-        .modal-btn-confirm { background: var(--primary); }
-        .modal-btn-danger { background: var(--danger); }
+        .modal-buttons { display: -webkit-box; display: -webkit-flex; display: flex; margin-top: 15px;}
+        .modal-btn { -webkit-box-flex: 1; -webkit-flex: 1; flex: 1; padding: 12px; border-radius: 8px; border: none; font-size: 16px; font-weight: bold; cursor: pointer; color: white; margin: 0 5px; }
+        .modal-btn-cancel { background: #3c4043; }
+        .modal-btn-confirm { background: #1a73e8; }
+        .modal-btn-danger { background: #ea4335; }
         
-        #sig-canvas { border: 2px solid #ccc; border-radius: 8px; background: #fff; width: 100%; height: 250px; touch-action: none; cursor: crosshair; }
+        #sig-canvas { border: 2px solid #ccc; border-radius: 8px; background: #fff; width: 100%; height: 250px; cursor: crosshair; }
         .sig-preview { border: 1px solid #ddd; border-radius: 4px; display: none; margin-top: 10px; background: white; max-width: 100%; }
     </style>
 </head>
@@ -111,9 +101,9 @@
         <div class="meta-section-title">📅 時間與環境</div>
         <div class="meta-row">
             <label>調查日期：</label>
-            <div style="display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center;">
+            <div style="display: -webkit-box; display: -webkit-flex; display: flex; -webkit-box-align: center; -webkit-align-items: center; align-items: center;">
                 <input type="date" id="meta-date" class="meta-input" onchange="saveMeta()" style="margin-right: 10px;">
-                <span id="meta-weekday" style="font-weight: bold; color: var(--primary); white-space: nowrap; font-size: 16px;"></span>
+                <span id="meta-weekday" style="font-weight: bold; color: #1a73e8; white-space: nowrap; font-size: 16px;"></span>
             </div>
         </div>
         <div class="meta-row">
@@ -151,9 +141,9 @@
         <div class="meta-section-title">👤 調查人員</div>
         <div class="meta-row">
             <label>領隊：</label>
-            <div style="display: -webkit-flex; display: flex;">
-                <input type="text" id="meta-leader" class="meta-input" placeholder="可輸入姓名" onchange="saveMeta()" style="flex: 1; -webkit-flex: 1; margin-right: 10px;">
-                <button onclick="openSignature('leader')" style="padding: 0 15px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; white-space: nowrap; cursor: pointer;">✍️ 簽名</button>
+            <div style="display: -webkit-box; display: -webkit-flex; display: flex;">
+                <input type="text" id="meta-leader" class="meta-input" placeholder="可輸入姓名" onchange="saveMeta()" style="flex: 1; -webkit-box-flex: 1; -webkit-flex: 1; margin-right: 10px;">
+                <button onclick="openSignature('leader')" style="padding: 0 15px; background: #1a73e8; color: white; border: none; border-radius: 8px; font-weight: bold; white-space: nowrap; cursor: pointer;">✍️ 簽名</button>
             </div>
             <img id="preview-sig-leader" class="sig-preview" style="max-height: 80px;">
         </div>
@@ -170,7 +160,7 @@
         <div class="meta-row">
             <label>隊員：</label>
             <textarea id="meta-members" class="meta-input" rows="2" placeholder="可輸入隊員名單 (或使用簽名板)" onchange="saveMeta()"></textarea>
-            <button onclick="openSignature('members')" style="width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; margin-top: 10px; cursor: pointer;">✍️ 開啟隊員聯合簽名板</button>
+            <button onclick="openSignature('members')" style="width: 100%; padding: 12px; background: #1a73e8; color: white; border: none; border-radius: 8px; font-weight: bold; margin-top: 10px; cursor: pointer;">✍️ 開啟隊員聯合簽名板</button>
             <img id="preview-sig-members" class="sig-preview" style="max-height: 150px; width: 100%;">
         </div>
 
@@ -188,11 +178,11 @@
     </div>
 
     <div class="quick-select">
-        <div style="display: -webkit-flex; display: flex; -webkit-justify-content: space-between; justify-content: space-between; -webkit-align-items: center; align-items: center;">
+        <div style="display: -webkit-box; display: -webkit-flex; display: flex; -webkit-box-pack: justify; -webkit-justify-content: space-between; justify-content: space-between; -webkit-box-align: center; -webkit-align-items: center; align-items: center;">
             <span class="quick-label">⚡ 快速預選名單：</span>
             <div>
-                <button onclick="preSelectAll()" style="background:none; border:none; color:var(--dark); font-size:15px; font-weight:bold; cursor:pointer; padding:5px;">📥 全選加入</button>
-                <button onclick="showSettings()" style="background:none; border:none; color:var(--dark); font-size:15px; font-weight:bold; cursor:pointer; padding:5px;">⚙️ 編輯</button>
+                <button onclick="preSelectAll()" style="background:none; border:none; color:#3c4043; font-size:15px; font-weight:bold; cursor:pointer; padding:5px;">📥 全選</button>
+                <button onclick="showSettings()" style="background:none; border:none; color:#3c4043; font-size:15px; font-weight:bold; cursor:pointer; padding:5px;">⚙️ 編輯</button>
             </div>
         </div>
         <div class="quick-buttons" id="quick-buttons-container"></div>
@@ -274,10 +264,10 @@
 <div id="prompt-modal" class="modal-overlay">
     <div class="modal-content">
         <div id="prompt-title" class="modal-text" style="margin-bottom: 15px; font-weight: bold;"></div>
-        <input type="number" id="prompt-input" pattern="[0-9]*" placeholder="輸入數字..." style="width: 100%; padding: 15px; font-size: 24px; text-align: center; border: 2px solid var(--primary); border-radius: 8px; box-sizing: border-box; margin-bottom: 20px;">
+        <input type="number" id="prompt-input" pattern="[0-9]*" placeholder="輸入數字..." style="width: 100%; padding: 15px; font-size: 24px; text-align: center; border: 2px solid #1a73e8; border-radius: 8px; box-sizing: border-box; margin-bottom: 20px;">
         <div class="modal-buttons" style="-webkit-flex-wrap: wrap; flex-wrap: wrap;">
-            <button class="modal-btn" style="background: var(--success); color: white; min-width: 40%; margin-bottom: 10px;" onclick="applyPrompt('add')">➕ 加上去</button>
-            <button class="modal-btn" style="background: var(--warning); color: white; min-width: 40%; margin-bottom: 10px;" onclick="applyPrompt('set')">＝ 設為此數</button>
+            <button class="modal-btn" style="background: #34a853; color: white; min-width: 40%; margin-bottom: 10px;" onclick="applyPrompt('add')">➕ 加上去</button>
+            <button class="modal-btn" style="background: #f9ab00; color: white; min-width: 40%; margin-bottom: 10px;" onclick="applyPrompt('set')">＝ 設為此數</button>
             <button class="modal-btn modal-btn-cancel" style="min-width: 100%; margin:0;" onclick="closePrompt()">取消</button>
         </div>
     </div>
@@ -290,13 +280,12 @@
         <div class="modal-buttons" style="-webkit-flex-wrap: wrap; flex-wrap: wrap; margin-top: 15px;">
             <button class="modal-btn" style="background: #9aa0a6; color: white;" onclick="clearSignature()">🧹 清除重寫</button>
             <button class="modal-btn modal-btn-cancel" onclick="closeSignature()">取消</button>
-            <button class="modal-btn" style="background: var(--primary); color: white; min-width: 100%; margin: 10px 0 0 0;" onclick="saveSignature()">💾 儲存簽名</button>
+            <button class="modal-btn" style="background: #1a73e8; color: white; min-width: 100%; margin: 10px 0 0 0;" onclick="saveSignature()">💾 儲存簽名</button>
         </div>
     </div>
 </div>
 
 <script>
-    // 全部改寫為 ES5 語法，確保 iOS 9.3.5 完美運行
     var currentPhase = 'outbound';
     var data = {
         meta: { date: '', weather: '', outboundStart: '', outboundEnd: '', returnStart: '', returnEnd: '', leader: '', phone: '', email: '', members: '', leaderSignature: '', membersSignature: '' },
@@ -306,7 +295,7 @@
 
     var defaultCommonBirds = ['小白鷺', '白頭翁', '綠繡眼', '麻雀', '夜鷺', '珠頸斑鳩', '黑冠麻鷺', '大卷尾'];
     var commonBirds = [];
-    var STORAGE_KEY = 'offlineBirdSurveyData_v6_ios9'; 
+    var STORAGE_KEY = 'offlineBirdSurveyData_v7_ios9'; 
     var LIST_STORAGE_KEY = 'customBirdList_ios9'; 
     var editingBird = null;
 
@@ -319,7 +308,7 @@
         try {
             arr.sort(function(a, b) { return a.localeCompare(b, 'zh-TW', { collation: 'stroke' }); });
         } catch (e) {
-            arr.sort(function(a, b) { return a.localeCompare(b); });
+            arr.sort();
         }
     }
 
@@ -497,10 +486,20 @@
     canvas.addEventListener('mouseup', endPosition);
     canvas.addEventListener('mousemove', draw);
     canvas.addEventListener('mouseout', endPosition);
-    // 兼容 iOS 9 的 Touch Event
-    canvas.addEventListener('touchstart', function(e) { e.preventDefault(); startPosition(e); }, false);
-    canvas.addEventListener('touchend', function(e) { e.preventDefault(); endPosition(); }, false);
-    canvas.addEventListener('touchmove', function(e) { e.preventDefault(); draw(e); }, false);
+    
+    // 修復 iOS 9 的 Touch Event 問題
+    canvas.addEventListener('touchstart', function(e) { 
+        if(e.target === canvas) { e.preventDefault(); }
+        startPosition(e); 
+    }, false);
+    canvas.addEventListener('touchend', function(e) { 
+        if(e.target === canvas) { e.preventDefault(); }
+        endPosition(); 
+    }, false);
+    canvas.addEventListener('touchmove', function(e) { 
+        if(e.target === canvas) { e.preventDefault(); }
+        draw(e); 
+    }, false);
 
     function setPhase(phase) {
         currentPhase = phase;
@@ -859,4 +858,5 @@
 
 </body>
 </html>
+
 
