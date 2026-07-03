@@ -50,11 +50,11 @@
           </h2>
           <p class="text-sm text-stone-500 mb-4">今天哪個畫面最讓你感動？拍下來或選一張照片。</p>
           
+          <!-- 移除了 capture="environment" 讓 iPhone 可以選擇相簿 -->
           <input
             type="file"
             id="file-input"
             accept="image/*"
-            capture="environment"
             class="hidden"
           />
           
@@ -440,6 +440,9 @@
       resultView.classList.add('hidden');
       formView.classList.remove('hidden');
       formView.classList.add('block');
+      
+      // 清空 input file，讓使用者可以重複選取同一張照片
+      fileInput.value = '';
     });
 
   </script>
