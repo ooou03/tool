@@ -1,0 +1,329 @@
+import React, { useState, useRef } from 'react';
+import { Camera, Download, RefreshCcw, MapPin, Feather, Image as ImageIcon, Heart, User } from 'lucide-react';
+
+const App = () => {
+  const [image, setImage] = useState(null);
+  const [keyword, setKeyword] = useState('地方記憶');
+  const [story, setStory] = useState('');
+  const [authorName, setAuthorName] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedCard, setGeneratedCard] = useState(null);
+  const fileInputRef = useRef(null);
+
+  const keywords = [
+    '地方記憶', '生態共好', '歷史傳承', '未來想像', '走讀感動', '尋常之美'
+  ];
+
+  // 處理照片上傳
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setImage(event.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // 處理 Canvas 文字換行 (適用於中文)
+  const wrapText = (context, text, x, y, maxWidth, lineHeight) => {
+    const words = text.split('');
+    let line = '';
+    for (let n = 0; n < words.length; n++) {
+      const testLine = line + words[n];
+      const metrics = context.measureText(testLine);
+      const testWidth = metrics.width;
+      if (testWidth > maxWidth && n > 0 && words[n] !== '，' && words[n] !== '。') {
+        context.fillText(line, x, y);
+        line = words[n];
+        y += lineHeight;
+      } else {
+        line = testLine;
+      }
+    }
+    context.fillText(line, x, y);
+    return y + lineHeight;
+  };
+
+  // 生成明信片
+  const generateCard = () => {
+    if (!image || !authorName.trim()) return;
+    setIsGenerating(true);
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    // 設定畫布尺寸 (IG 貼文/直式比例)
+    canvas.width = 1080;
+    canvas.height = 1350;
+
+    // 繪製背景 (溫暖的米白色)
+    ctx.fillStyle = '#f5f5f0';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // 載入圖片並繪製
+    const img = new Image();
+    img.onload = () => {
+      // 計算裁切與縮放以填滿上半部
+      const targetWidth = 980;
+      const targetHeight = 800;
+      const xOffset = 50;
+      const yOffset = 50;
+
+      const imgRatio = img.width / img.height;
+      const targetRatio = targetWidth / targetHeight;
+      let drawWidth, drawHeight, drawX, drawY;
+
+      if (imgRatio > targetRatio) {
+        drawHeight = img.height;
+        drawWidth = img.height * targetRatio;
+        drawX = (img.width - drawWidth) / 2;
+        drawY = 0;
+      } else {
+        drawWidth = img.width;
+        drawHeight = img.width / targetRatio;
+        drawX = 0;
+        drawY = (img.height - drawHeight) / 2;
+      }
+
+      // 畫照片
+      ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight, xOffset, yOffset, targetWidth, targetHeight);
+
+      // 畫照片邊框
+      ctx.strokeStyle = '#e5e7eb';
+      ctx.lineWidth = 4;
+      ctx.strokeRect(xOffset, yOffset, targetWidth, targetHeight);
+
+      // 繪製地點與標籤
+      ctx.fillStyle = '#166534'; // 墨綠色
+      ctx.font = 'bold 36px sans-serif';
+      ctx.fillText('📍 竹圍地景走讀', 50, 930);
+
+      // 畫標籤膠囊
+      ctx.fillStyle = '#dcfce7';
+      ctx.roundRect(330, 895, 180, 48, 24);
+      ctx.fill();
+      ctx.fillStyle = '#166534';
+      ctx.font = 'bold 24px sans-serif';
+      ctx.fillText(`# ${keyword}`, 355, 928);
+
+      // 繪製故事文字
+      ctx.fillStyle = '#374151'; // 深灰色
+      ctx.font = '36px sans-serif';
+      wrapText(ctx, story || '（留下了一片空白的想像...）', 50, 1000, 980, 56);
+
+      // 繪製底部裝飾 (左側)
+      ctx.fillStyle = '#9ca3af';
+      ctx.font = '24px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('—— 獻給這片土地的美麗想像', 50, canvas.height - 50);
+
+      // 繪製作者署名 (右側)
+      ctx.fillStyle = '#166534'; // 使用主題綠色凸顯名字
+      ctx.font = 'bold 28px sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText(`✎ 走讀人：${authorName}`, canvas.width - 50, canvas.height - 50);
+      
+      // 恢復預設對齊
+      ctx.textAlign = 'left';
+
+      // 產生圖片
+      setGeneratedCard(canvas.toDataURL('image/jpeg', 0.9));
+      setIsGenerating(false);
+    };
+    img.src = image;
+  };
+
+  // 圓角矩形 Polyfill
+  CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+    if (w < 2 * r) r = w / 2;
+    if (h < 2 * r) r = h / 2;
+    this.beginPath();
+    this.moveTo(x + r, y);
+    this.arcTo(x + w, y, x + w, y + h, r);
+    this.arcTo(x + w, y + h, x, y + h, r);
+    this.arcTo(x, y + h, x, y, r);
+    this.arcTo(x, y, x + r, y, r);
+    this.closePath();
+    return this;
+  };
+
+  const handleDownload = () => {
+    if (generatedCard) {
+      const link = document.createElement('a');
+      link.download = `竹圍走讀_${authorName}.jpg`;
+      link.href = generatedCard;
+      link.click();
+    }
+  };
+
+  // 判斷按鈕狀態與文字
+  const getButtonText = () => {
+    if (isGenerating) return '正在施展魔法...';
+    if (!image) return '請先上傳一張照片 📷';
+    if (!authorName.trim()) return '請填寫您的名字 ✍️';
+    return '✨ 產生我的地景故事卡';
+  };
+
+  const isButtonDisabled = !image || !authorName.trim() || isGenerating;
+
+  return (
+    <div className="min-h-screen bg-stone-100 font-sans text-stone-800 pb-12">
+      {/* Header */}
+      <header className="bg-emerald-800 text-white p-6 rounded-b-3xl shadow-lg mb-8">
+        <h1 className="text-2xl font-bold flex items-center gap-2">
+          <MapPin size={28} />
+          竹圍地景故事卡
+        </h1>
+        <p className="mt-3 text-emerald-100 text-sm leading-relaxed">
+          在走讀進行中，請隨時記下你所看見的以及你的感想，把它化作一張一張專屬的明信片！<br />
+          你可以一路上用它來做紀錄！多做幾張都可以喔！只要你想記錄就記錄下來，但記得要傳到群組來分享！
+        </p>
+      </header>
+
+      <main className="max-w-md mx-auto px-4">
+        {!generatedCard ? (
+          <div className="space-y-6">
+            
+            {/* 步驟一：照片 */}
+            <div className="bg-white p-5 rounded-2xl shadow-sm border border-stone-200">
+              <h2 className="text-lg font-bold mb-3 flex items-center gap-2 text-emerald-700">
+                <ImageIcon size={20} />
+                1. 捕捉一瞬
+              </h2>
+              <p className="text-sm text-stone-500 mb-4">今天哪個畫面最讓你感動？拍下來或選一張照片。</p>
+              
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handleImageChange}
+                ref={fileInputRef}
+                className="hidden"
+              />
+              
+              {image ? (
+                <div className="relative rounded-xl overflow-hidden aspect-video bg-stone-100 flex items-center justify-center cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                  <img src={image} alt="Preview" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                    <span className="text-white bg-black bg-opacity-50 px-4 py-2 rounded-full text-sm">點擊更換照片</span>
+                  </div>
+                </div>
+              ) : (
+                <button 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full aspect-video border-2 border-dashed border-emerald-300 rounded-xl flex flex-col items-center justify-center text-emerald-600 hover:bg-emerald-50 transition-colors"
+                >
+                  <Camera size={40} className="mb-2 opacity-70" />
+                  <span className="font-medium">點此拍照或上傳圖片</span>
+                </button>
+              )}
+            </div>
+
+            {/* 步驟二：核心理念 */}
+            <div className="bg-white p-5 rounded-2xl shadow-sm border border-stone-200">
+              <h2 className="text-lg font-bold mb-3 flex items-center gap-2 text-emerald-700">
+                <Heart size={20} />
+                2. 核心感受
+              </h2>
+              <p className="text-sm text-stone-500 mb-4">選一個最能代表今天踏查的詞彙。</p>
+              <div className="flex flex-wrap gap-2">
+                {keywords.map(kw => (
+                  <button
+                    key={kw}
+                    onClick={() => setKeyword(kw)}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                      keyword === kw 
+                        ? 'bg-emerald-600 text-white shadow-md transform scale-105' 
+                        : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                    }`}
+                  >
+                    {kw}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 步驟三：寫下感想與署名 */}
+            <div className="bg-white p-5 rounded-2xl shadow-sm border border-stone-200">
+              <h2 className="text-lg font-bold mb-3 flex items-center gap-2 text-emerald-700">
+                <Feather size={20} />
+                3. 寫下感想與署名
+              </h2>
+              <p className="text-sm text-stone-500 mb-4">寫下你對這裡的想法，並留下您的大名。</p>
+              
+              {/* 姓名輸入框 */}
+              <div className="flex items-center bg-stone-50 border border-stone-200 rounded-xl mb-3 overflow-hidden focus-within:ring-2 focus-within:ring-emerald-500">
+                <div className="pl-3 pr-2 text-stone-400">
+                  <User size={18} />
+                </div>
+                <input
+                  type="text"
+                  value={authorName}
+                  onChange={(e) => setAuthorName(e.target.value)}
+                  placeholder="您的名字或暱稱 (必填)"
+                  className="w-full py-3 pr-3 bg-transparent border-none focus:ring-0 text-stone-700 placeholder-stone-400"
+                  maxLength={15}
+                />
+              </div>
+
+              <textarea
+                value={story}
+                onChange={(e) => setStory(e.target.value)}
+                placeholder="例如：看見老街的紅磚，想像未來這裡能成為充滿活力的藝文聚落..."
+                className="w-full h-32 p-4 border border-stone-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none bg-stone-50"
+                maxLength={100}
+              />
+              <div className="text-right text-xs text-stone-400 mt-1">
+                {story.length}/100 字
+              </div>
+            </div>
+
+            {/* 產生按鈕 */}
+            <button
+              onClick={generateCard}
+              disabled={isButtonDisabled}
+              className={`w-full py-4 rounded-xl font-bold text-lg text-white shadow-lg transition-all ${
+                isButtonDisabled
+                  ? 'bg-stone-400 cursor-not-allowed'
+                  : 'bg-emerald-600 hover:bg-emerald-700 active:scale-95'
+              }`}
+            >
+              {getButtonText()}
+            </button>
+          </div>
+        ) : (
+          /* 完成畫面 */
+          <div className="space-y-6 animate-in fade-in zoom-in duration-300">
+            <div className="bg-white p-4 rounded-2xl shadow-sm border border-stone-200">
+              <img src={generatedCard} alt="Generated Postcard" className="w-full rounded-xl shadow-md" />
+            </div>
+            
+            <div className="flex gap-4">
+              <button
+                onClick={handleDownload}
+                className="flex-1 bg-emerald-600 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-emerald-700 active:scale-95 shadow-md"
+              >
+                <Download size={20} />
+                下載照片分享
+              </button>
+              
+              <button
+                onClick={() => setGeneratedCard(null)}
+                className="px-6 bg-stone-200 text-stone-700 py-4 rounded-xl font-bold flex items-center justify-center hover:bg-stone-300 active:scale-95"
+              >
+                <RefreshCcw size={20} />
+              </button>
+            </div>
+            <p className="text-center text-sm text-stone-500">
+              💡 下載後，記得傳到我們的 LINE 群組喔！
+            </p>
+          </div>
+        )}
+      </main>
+    </div>
+  );
+};
+
+export default App;
