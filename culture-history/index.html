@@ -5,8 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>地景故事卡</title>
   
+  <!-- 引入 Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   
+  <!-- 引入 Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
   
   <style>
@@ -23,6 +25,7 @@
 <body class="min-h-screen bg-stone-100 font-sans text-stone-800 pb-12">
 
   <div id="app-container">
+    <!-- Header -->
     <header class="bg-emerald-800 text-white p-6 rounded-b-3xl shadow-lg mb-8">
       <h1 class="text-2xl font-bold flex items-center gap-2">
         <i data-lucide="map-pin" class="w-7 h-7"></i>
@@ -36,8 +39,10 @@
 
     <main class="max-w-md mx-auto px-4">
       
+      <!-- 表單填寫區塊 -->
       <div id="form-view" class="space-y-6 block">
         
+        <!-- 步驟一：照片 -->
         <div class="bg-white p-5 rounded-2xl shadow-sm border border-stone-200">
           <h2 class="text-lg font-bold mb-3 flex items-center gap-2 text-emerald-700">
             <i data-lucide="image" class="w-5 h-5"></i>
@@ -53,6 +58,7 @@
             class="hidden"
           />
           
+          <!-- 上傳按鈕區 -->
           <button 
             id="upload-btn"
             class="w-full aspect-video border-2 border-dashed border-emerald-300 rounded-xl flex flex-col items-center justify-center text-emerald-600 hover:bg-emerald-50 transition-colors"
@@ -61,6 +67,7 @@
             <span class="font-medium">點此拍照或上傳圖片</span>
           </button>
 
+          <!-- 預覽圖片區 (預設隱藏) -->
           <div id="preview-container" class="hidden relative rounded-xl overflow-hidden aspect-video bg-stone-100 flex items-center justify-center cursor-pointer">
             <img id="preview-img" src="" alt="Preview" class="w-full h-full object-cover" />
             <div class="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
@@ -69,6 +76,7 @@
           </div>
         </div>
 
+        <!-- 步驟二：核心感受 -->
         <div class="bg-white p-5 rounded-2xl shadow-sm border border-stone-200">
           <h2 class="text-lg font-bold mb-3 flex items-center gap-2 text-emerald-700">
             <i data-lucide="heart" class="w-5 h-5"></i>
@@ -76,9 +84,11 @@
           </h2>
           <p class="text-sm text-stone-500 mb-4">選一個最能代表今天踏查的詞彙。</p>
           <div id="keyword-container" class="flex flex-wrap gap-2">
-            </div>
+            <!-- 關鍵字按鈕將由 JS 動態生成 -->
+          </div>
         </div>
 
+        <!-- 步驟三：寫下感想與署名 -->
         <div class="bg-white p-5 rounded-2xl shadow-sm border border-stone-200">
           <h2 class="text-lg font-bold mb-3 flex items-center gap-2 text-emerald-700">
             <i data-lucide="feather" class="w-5 h-5"></i>
@@ -110,6 +120,7 @@
           </div>
         </div>
 
+        <!-- 產生按鈕 -->
         <button
           id="generate-btn"
           class="w-full py-4 rounded-xl font-bold text-lg text-white shadow-lg transition-all bg-stone-400 cursor-not-allowed"
@@ -119,18 +130,20 @@
         </button>
       </div>
 
+      <!-- 完成畫面 (預設隱藏) -->
       <div id="result-view" class="hidden space-y-6 fade-in">
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-stone-200">
           <img id="generated-img" src="" alt="Generated Postcard" class="w-full rounded-xl shadow-md" />
         </div>
         
         <div class="flex gap-4">
+          <!-- 更改為呼叫原生分享/儲存選單的按鈕 -->
           <button
             id="download-btn"
             class="flex-1 bg-emerald-600 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-emerald-700 active:scale-95 shadow-md"
           >
-            <i data-lucide="download" class="w-5 h-5"></i>
-            下載照片分享
+            <i data-lucide="share" class="w-5 h-5"></i>
+            儲存至相簿 / 分享
           </button>
           
           <button
@@ -141,7 +154,7 @@
           </button>
         </div>
         <p class="text-center text-sm text-stone-500">
-          💡 下載後，記得傳到我們的 LINE 群組喔！
+          💡 點擊上方按鈕，選擇「儲存影像」即可存入相簿，或直接分享至 LINE！
         </p>
       </div>
 
@@ -374,14 +387,48 @@
       img.src = imageSrc;
     });
 
-    // 7. 處理下載
-    downloadBtn.addEventListener('click', () => {
-      if (generatedCardDataUrl) {
-        const link = document.createElement('a');
-        link.download = `走讀_${authorInput.value.trim()}.jpg`;
-        link.href = generatedCardDataUrl;
-        link.click();
+    // 輔助函式：將 base64 轉為 File 物件 (為了讓原生分享 API 支援圖片)
+    function dataURLtoFile(dataurl, filename) {
+      let arr = dataurl.split(','),
+          mime = arr[0].match(/:(.*?);/)[1],
+          bstr = atob(arr[1]),
+          n = bstr.length,
+          u8arr = new Uint8Array(n);
+      while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
       }
+      return new File([u8arr], filename, { type: mime });
+    }
+
+    // 7. 處理下載 / 分享 (更新為支援存入相簿的原生選單)
+    downloadBtn.addEventListener('click', async () => {
+      if (!generatedCardDataUrl) return;
+
+      const filename = `走讀_${authorInput.value.trim()}.jpg`;
+
+      // 檢查瀏覽器是否支援 Web Share API，並且支援分享檔案
+      if (navigator.canShare) {
+        try {
+          const file = dataURLtoFile(generatedCardDataUrl, filename);
+          
+          if (navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              files: [file],
+              title: '地景故事卡',
+              text: '這是我剛製作的地景故事卡，分享給大家！'
+            });
+            return; // 成功呼叫原生分享選單，結束流程
+          }
+        } catch (error) {
+          console.log('使用者取消分享或分享失敗，改用一般下載', error);
+        }
+      }
+
+      // 如果不支援分享 API，或是使用者取消，則退回「一般網頁下載模式」
+      const link = document.createElement('a');
+      link.download = filename;
+      link.href = generatedCardDataUrl;
+      link.click();
     });
 
     // 8. 重新製作
